@@ -1,0 +1,50 @@
+:root {
+    --background: #1D1D1D;
+    --basic-text: #F5F5F5;
+    --login-button-bg-color: #0B4BA1;
+
+}
+
+body {
+    background-color: var(--background);
+}
+
+img {
+    width: 100%;
+}
+
+/* Start Login */
+.login-container {
+    border: 1px solid red;
+    width: 80%;
+    margin: 100px auto;
+}
+.login-image {
+    width: 100%;
+    margin: auto;
+    border: 1px solid #F5F5F5;
+}
+
+.login-info-container {
+    border: 1px solid greenyellow;
+    display: flex;             /* Use flexbox for centering */
+    flex-direction: column;    /* Arrange children in a column */
+    align-items: center;       /* Center children horizontally */
+    justify-content: center;   /* Center children vertically */
+}
+.login-input {
+    margin-top: 20px;
+}
+
+.login-container input {
+    display: block;
+}
+
+.login-button {
+    background-color: #0B4BA1;
+    border: none;
+    color: var(--basic-text);
+    margin: 10px 0; /* Space out the inputs */
+    align-self: center;
+}
+/* End Login */
