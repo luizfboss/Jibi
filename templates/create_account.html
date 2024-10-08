@@ -12,13 +12,33 @@
         <div class="columns is-centered mt-5">
             <div class="column is-half">
                 <h1 class="title is-1">Create Account</h1>
-                <form action="/user_auth" method="post">
-                    <input class="input mb-3" type="text" name="username" placeholder="Username">
-                    <input class="input" type="password" name="password" placeholder="Password">
+                <form action="/add_user" method="post">
+                    <div class="field is-horizontal">
+                        <div class="control mr-2">
+                            <label class="label mt-2" for="first_name">First name</label>
+                            <input required class="input" type="text" name="first_name" placeholder="Alex" value="" />
+                        </div>
 
-                    <div class="mt-3 is-flex is-align-items-center">
-                        <button class="button is-link mt-2" type="submit" name="login">Login</button>
-                        <a class="ml-3 mt-2" href="#">Forgot your password?</a>
+                        <div class="control">
+                            <label class="label mt-2" for="last_name">Last name</label>
+                            <input required class="input" type="text" name="last_name" placeholder="Smith" value="" />
+                        </div>
+                    </div>
+
+                    <label class="label mt-2" for="email">Email</label>
+                    <input required class="input mb-3" type="email" name="email" placeholder="youremail@email.com">
+
+                    <label class="label mt-2" for="username">Username</label>
+                    <input required class="input mb-3" type="text" name="username">
+
+                    <label class="label mt-2" for="password">Password</label>
+                    <input required class="input" type="password" name="password">
+
+                    <label class="label mt-2" for="confirmPassword">Confirm Password</label>
+                    <input required class="input" type="password" name="confirmPassword">
+
+                    <div class="mt-3">
+                        <button class="button is-link mt-2" type="submit" name="create_account">Create Account</button>
                     </div>
                 </form>
             </div>

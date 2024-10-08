@@ -67,7 +67,6 @@ def user_auth():
     db = get_db()
     user = db.execute('SELECT * FROM users WHERE username = ? AND password = ?',
                         (username, password)).fetchone()
-    db.close()
 
     if user:
         print("success!")
@@ -81,22 +80,21 @@ def user_auth():
 def register_user():
     return render_template("create_account.html")
 
+@app.route('/add_user', methods=["POST"])
+def add_user():
+    db = get_db()
+    username = request.form['username']
+    password = request.form['password']
+    first_name = request.form['first_name']
+    last_name = request.form['last_name']
+    email = request.form['email']
 
+    # Hash the password
+    # hashed_password = hash_password(password)
 
+    # Insert the new user into the database
+    db.execute('INSERT INTO users (username, password, first_name, last_name, email) VALUES (?, ?, ?, ?, ?)',
+               (username, password, first_name, last_name, email))
+    db.commit()
 
-
-
-#@app.route('/add_user')
-#def add_user():
-#    db = get_db()
-#    username = request.form['username']
-#    password = request.form['password']
-#
-#    # Hash the password
-#    hashed_password = hash_password(password)
-#
-#    # Insert the new user into the database
-#    db.execute('INSERT INTO users (username, password) VALUES (?, ?)', (username, hashed_password))
-#    db.commit()
-#
-#    return render_template('login.html')
+    return render_template('login.html')
