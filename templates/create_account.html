@@ -1,0 +1,28 @@
+{% block body %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jibi</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css">
+</head>
+<body>
+    <div class="container is-fluid">
+        <div class="columns is-centered mt-5">
+            <div class="column is-half">
+                <h1 class="title is-1">Create Account</h1>
+                <form action="/user_auth" method="post">
+                    <input class="input mb-3" type="text" name="username" placeholder="Username">
+                    <input class="input" type="password" name="password" placeholder="Password">
+
+                    <div class="mt-3 is-flex is-align-items-center">
+                        <button class="button is-link mt-2" type="submit" name="login">Login</button>
+                        <a class="ml-3 mt-2" href="#">Forgot your password?</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+{% endblock %}
