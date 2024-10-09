@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jibi</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css">
+</head>
+<div class="container is-fluid">
+  <div class="columns is-centered mt-5 is-4">
+    <div class="column is-half">
+      {% for message in get_flashed_messages() %}
+        <div class="is-rounded has-background-link has-text-info p-3 mb-5">{{ message }}</div>
+      {% endfor %}
+      {% block body %}
+
+      {% endblock %}
+    </div>
+  </div>
+</div>
+

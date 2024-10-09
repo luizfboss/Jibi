@@ -1,7 +1,6 @@
 import os
 from sqlite3 import dbapi2 as sqlite3
 from flask import Flask, request, g, redirect, url_for, render_template, flash
-
 import hashlib # hash passwords
 
 app = Flask(__name__)
@@ -80,21 +79,40 @@ def user_auth():
 def register_user():
     return render_template("create_account.html")
 
+def hash_password(password):
+    """
+        Helper function for add_user().
+        Hashing function to hash passwords (to be stored securely in DB).
+    """
+    return hashlib.sha256(password.encode()).hexdigest()
+
 @app.route('/add_user', methods=["POST"])
 def add_user():
     db = get_db()
-    username = request.form['username']
-    password = request.form['password']
     first_name = request.form['first_name']
     last_name = request.form['last_name']
     email = request.form['email']
+    username = request.form['username']
+    password = request.form['password']
+    confirm_password = request.form['confirm_password']
 
-    # Hash the password
-    # hashed_password = hash_password(password)
 
-    # Insert the new user into the database
-    db.execute('INSERT INTO users (username, password, first_name, last_name, email) VALUES (?, ?, ?, ?, ?)',
-               (username, password, first_name, last_name, email))
-    db.commit()
+    if password == confirm_password:
+        # Hash the password
+        hashed_password = hash_password(password)
 
-    return render_template('login.html')
+        # See if username is unique
+        try:
+            db.execute('INSERT INTO users (username, password, first_name, last_name, email) VALUES (?, ?, ?, ?, ?)',
+                       (username, hashed_password, first_name, last_name, email))
+            db.commit()
+            flash('New entry was successfully posted.','success')
+            return redirect('/')
+
+        except sqlite3.IntegrityError:
+            flash("Username already exists. Please try another one.", 'error')
+            return redirect('/register_user')
+
+    else:
+        flash('Passwords must match.')
+        return redirect('register_user')
