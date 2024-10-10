@@ -61,19 +61,17 @@ def user_auth():
     password = request.args.get('password')
 
     # Hash the password to compare with hashed passwords in DB
-    # hashed_password = hash_password(password)
+    hashed_password = hash_password(password)
 
     db = get_db()
     user = db.execute('SELECT * FROM users WHERE username = ? AND password = ?',
-                        (username, password)).fetchone()
+                        (username, hashed_password)).fetchone()
 
     if user:
-        print("success!")
-        # render_template("feed.html")
+        return render_template("feed.html", name=user[1].capitalize())
     else:
-        print("fail.")
-
-    return render_template("login.html")
+        flash('Credentials do not match.')
+        return render_template("login.html")
 
 @app.route('/register_user')
 def register_user():
@@ -106,11 +104,11 @@ def add_user():
             db.execute('INSERT INTO users (username, password, first_name, last_name, email) VALUES (?, ?, ?, ?, ?)',
                        (username, hashed_password, first_name, last_name, email))
             db.commit()
-            flash('New entry was successfully posted.','success')
+            flash('Your new account has been created.')
             return redirect('/')
 
         except sqlite3.IntegrityError:
-            flash("Username already exists. Please try another one.", 'error')
+            flash("Username already exists. Please try another one.")
             return redirect('/register_user')
 
     else:
