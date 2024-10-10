@@ -1,6 +1,6 @@
 import os
 from sqlite3 import dbapi2 as sqlite3
-from flask import Flask, request, g, redirect, url_for, render_template, flash
+from flask import Flask, session, request, g, redirect, url_for, render_template, flash
 import hashlib # hash passwords
 
 app = Flask(__name__)
@@ -50,25 +50,27 @@ def close_db(error):
     if hasattr(g, 'sqlite_db'):
         g.sqlite_db.close()
 
+# LOGIN START
 @app.route('/')
 def login():
     return render_template("login.html")
 
-@app.route('/user_auth', methods=['GET'])
+@app.route('/user_auth', methods=["POST"])
 def user_auth():
     """ Authenticates user entries given in the login form. """
-    username = request.args.get('username')
-    password = request.args.get('password')
+    username = request.form.get('username')
+    password = request.form.get('password')
 
     # Hash the password to compare with hashed passwords in DB
     hashed_password = hash_password(password)
 
     db = get_db()
     user = db.execute('SELECT * FROM users WHERE username = ? AND password = ?',
-                        (username, hashed_password)).fetchone()
+                      (username, hashed_password)).fetchone()
 
     if user:
-        return render_template("feed.html", name=user[1].capitalize())
+        session['username'] = user[1].capitalize()
+        return redirect(url_for('feed'))
     else:
         flash('Credentials do not match.')
         return render_template("login.html")
@@ -94,7 +96,6 @@ def add_user():
     password = request.form['password']
     confirm_password = request.form['confirm_password']
 
-
     if password == confirm_password:
         # Hash the password
         hashed_password = hash_password(password)
@@ -114,3 +115,19 @@ def add_user():
     else:
         flash('Passwords must match.')
         return redirect('register_user')
+# LOGIN END
+
+# ADD POST START
+@app.route('/feed', methods=['GET'])
+def feed():
+    """ Render the feed page. """
+    name = session.get('username')
+    if not name:
+        flash('You are not logged in.')
+        return redirect(url_for('login'))
+    
+    return render_template("feed.html", name=name)
+
+@app.route('/add_post', methods=["POST"])
+def add_post():
+    render_template('add_post.html')
