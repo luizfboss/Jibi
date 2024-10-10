@@ -99,7 +99,7 @@ def add_user():
         # Hash the password
         hashed_password = hash_password(password)
 
-        # See if username is unique
+        # See if username is unique. If not, warn user.
         try:
             db.execute('INSERT INTO users (username, password, first_name, last_name, email) VALUES (?, ?, ?, ?, ?)',
                        (username, hashed_password, first_name, last_name, email))
