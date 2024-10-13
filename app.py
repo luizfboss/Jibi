@@ -130,7 +130,7 @@ def feed():
     first_name = session.get('first_name', "Guest")
     return render_template("feed.html", name=first_name)
 
-@app.route('/add_post', methods=["POST"])
+@app.route('/add_post')
 def add_post():
     return render_template('add_post.html')
 
