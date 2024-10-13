@@ -70,6 +70,7 @@ def user_auth():
 
     if user:
         session['username'] = user[1].capitalize()
+        session['first_name'] = user['first_name'].capitalize()
         return redirect(url_for('feed'))
     else:
         flash('Credentials do not match.')
@@ -126,14 +127,14 @@ def feed():
         flash('You are not logged in.')
         return redirect(url_for('login'))
 
-    return render_template("feed.html", name=name)
+    first_name = session.get('first_name', "Guest")
+    return render_template("feed.html", name=first_name)
 
 @app.route('/add_post', methods=["POST"])
 def add_post():
-    render_template('add_post.html')
+    return render_template('add_post.html')
 
 # TODO:
-# - Add unit tests to login feature
 # - add unit test that makes sure that the user's first name is shown in the main page
 # - create form for post
 # - possibly: try to add the post to the database (create tables for each part of the post).

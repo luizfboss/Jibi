@@ -34,37 +34,31 @@ class FlaskrTestCase(unittest.TestCase):
 
     def test_user_auth_success(self):
         """Test successful user authentication."""
-        # Add user to database first
         self.test_add_user_success()
-
-        # Simulate a GET request with valid username and password in the query string
-        # Use query_string for GET requests and data for POST requests.
-        rv = self.app.get('/user_auth', query_string=dict(
+        rv = self.app.post('/user_auth', data=dict(
             username='johndoe',
             password='password123'  # Pass plain text password, hash it in the function
-        ))
+        ), follow_redirects=True)
 
-        # Check if the response contains the expected data
-        assert b'You look good today,' in rv.data
+        assert b'You look good today' in rv.data  # Assuming the feed page greets the user with "Welcome"
+        assert b'John' in rv.data  # Assuming the feed page greets the user with "Welcome"
+
+
 
     def test_user_auth_fail_mismatch_password(self):
         """Test failed user authentication with wrong password."""
-        # Simulate a GET request with invalid credentials
-        rv = self.app.get('/user_auth', query_string=dict(
+        rv = self.app.post('/user_auth', data=dict(
             username='johndoe',
-            password='invalid_password'))
-
-        # Check if the login page is rendered and flash message is displayed
+            password='invalid_password'
+        ))
         assert b'Credentials do not match.' in rv.data
 
     def test_user_auth_fail_mismatch_username(self):
         """Test failed user authentication with wrong username."""
-        # Simulate a GET request with invalid credentials
-        rv = self.app.get('/user_auth', query_string=dict(
+        rv = self.app.post('/user_auth', data=dict(
             username='invalid_username',
-            password='password123'))
-
-        # Check if the login page is rendered and flash message is displayed
+            password='password123'
+        ))
         assert b'Credentials do not match.' in rv.data
 
     def test_add_user_success(self):
