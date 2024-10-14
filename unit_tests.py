@@ -123,68 +123,24 @@ class FlaskrTestCase(unittest.TestCase):
         assert b'Submit Review' in rv.data  # Check for submit button
 
     # UNIT TESTS FOR LATER
-    # def test_add_post_success(self):
-    #     """Test adding a post (comic book review) successfully."""
-    #     self.test_add_user_success()  # Register user first
-    #     self.app.post('/user_auth', data=dict(
-    #         username='johndoe',
-    #         password='password123'
-    #     ), follow_redirects=True)  # Log in user
-    #
-    #     rv = self.app.post('/add_post', data=dict(
-    #         title='Spider-Man',
-    #         review='Amazing comic!',
-    #         stars='5'
-    #     ), follow_redirects=True)
-    #     assert b'Your post has been added.' in rv.data
-    #
-    # def test_add_post_fail_missing_title(self):
-    #     """Test adding a post fails if the title is missing."""
-    #     self.test_add_user_success()  # Register user first
-    #     self.app.post('/user_auth', data=dict(
-    #         username='johndoe',
-    #         password='password123'
-    #     ), follow_redirects=True)  # Log in user
-    #
-    #     rv = self.app.post('/add_post', data=dict(
-    #         title='',  # Missing title
-    #         review='Great comic!',
-    #         stars='4'
-    #     ), follow_redirects=True)
-    #     assert b'Title is required.' in rv.data
-    #
-    # def test_add_post_fail_invalid_star_rating(self):
-    #     """Test adding a post fails if stars rating is out of valid range."""
-    #     self.test_add_user_success()  # Register user first
-    #     self.app.post('/user_auth', data=dict(
-    #         username='johndoe',
-    #         password='password123'
-    #     ), follow_redirects=True)  # Log in user
-    #
-    #     rv = self.app.post('/add_post', data=dict(
-    #         title='Spider-Man',
-    #         review='Amazing comic!',
-    #         stars='6'  # Invalid star rating (out of 5)
-    #     ), follow_redirects=True)
-    #     assert b'Invalid star rating. Must be between 1 and 5.' in rv.data
-    #
-    # def test_upload_image_success(self):
-    #     """Test successful image upload with a post."""
-    #     self.test_add_user_success()  # Register user first
-    #     self.app.post('/user_auth', data=dict(
-    #         username='johndoe',
-    #         password='password123'
-    #     ), follow_redirects=True)  # Log in user
-    #
-    #     with open('test_image.jpg', 'rb') as img:
-    #         rv = self.app.post('/add_post', data=dict(
-    #             title='Spider-Man',
-    #             review='Amazing comic!',
-    #             stars='5',
-    #             image=(img, 'test_image.jpg')
-    #         ), content_type='multipart/form-data', follow_redirects=True)
-    #     assert b'Your post has been added.' in rv.data
-    #
+    def test_add_post_and_submit_review(self):
+        """Test the process of adding a post (comic book review) and submitting it successfully."""
+
+        # Step 1: Access the add post page
+        self.test_add_post_page_loads()
+        rv = self.app.get('/add_post', follow_redirects=True)
+
+        # Step 2: Submit the post via the submit_review route
+        rv = self.app.post('/submit_review', data=dict(
+            title='Spider-Man',
+            review='Amazing comic!',
+            stars='5'
+        ), follow_redirects=True)
+
+        # Check that the success message is flashed and the user is redirected to the feed
+        assert b'Your new review has been posted.' in rv.data
+        assert b'Add a Post' in rv.data  # Assuming the feed page contains the word 'Feed'
+
     # def test_feed_page_displays_post(self):
     #     """Test that the feed page displays the added post."""
     #     self.test_add_post_success()  # Add a post

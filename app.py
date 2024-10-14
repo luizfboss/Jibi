@@ -134,7 +134,10 @@ def feed():
 def add_post():
     return render_template('add_post.html')
 
+@app.route('/submit_review', methods=["POST"])
+def submit_review():
+    flash('Your new review has been posted.')
+    return redirect(url_for('feed'))
+
 # TODO:
-# - add unit test that makes sure that the user's first name is shown in the main page
-# - create form for post
 # - possibly: try to add the post to the database (create tables for each part of the post).
