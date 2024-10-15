@@ -3,6 +3,15 @@ from sqlite3 import dbapi2 as sqlite3
 from flask import Flask, session, request, g, redirect, url_for, render_template, flash
 import hashlib # hash passwords
 
+"""
+Users can upload files with names that contain characters that might cause problems or 
+security vulnerabilities when saved on the server. For example, filenames could 
+contain spaces, special characters, or even malicious code. secure_filename() strips 
+out or replaces these unsafe characters, ensuring that the filename is sanitized 
+before saving.
+"""
+from werkzeug.utils import secure_filename
+
 app = Flask(__name__)
 
 # Load default config and override config from an environment variable
@@ -11,7 +20,13 @@ app.config.update(dict(
     SECRET_KEY='development key',
 ))
 
+# For post uploads, ensure this path exists or create it beforehand
+UPLOAD_FOLDER = os.path.join(app.root_path, 'static/image_post_uploads')
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+""" SETUP FUNCTIONS BEGIN """
 def connect_db():
     """Connects to the specific database."""
     rv = sqlite3.connect(app.config['DATABASE'])
@@ -49,8 +64,10 @@ def close_db(error):
     """Closes the database again at the end of the request."""
     if hasattr(g, 'sqlite_db'):
         g.sqlite_db.close()
+""" SETUP FUNCTIONS END """
 
-# LOGIN START
+
+""" LOGIN START"""
 @app.route('/')
 def login():
     return render_template("login.html")
@@ -69,6 +86,7 @@ def user_auth():
                       (username, hashed_password)).fetchone()
 
     if user:
+        session['user_id'] = user['id']
         session['username'] = user[1].capitalize()
         session['first_name'] = user['first_name'].capitalize()
         return redirect(url_for('feed'))
@@ -116,9 +134,9 @@ def add_user():
     else:
         flash('Passwords must match.')
         return redirect('register_user')
-# LOGIN END
+""" LOGIN END """
 
-# ADD POST START
+""" ADD POST START """
 @app.route('/feed', methods=['GET'])
 def feed():
     """ Render the feed page. """
@@ -134,10 +152,60 @@ def feed():
 def add_post():
     return render_template('add_post.html')
 
+
+""" Helper functions for submit_review() function in route /submit_review """
+def allowed_file(filename):
+    """
+    Checks if the uploaded file has an allowed extension.
+
+    The function splits the filename by the last '.' and checks the file extension.
+    Allowed extensions are defined in the `ALLOWED_EXTENSIONS` set.
+
+    :param filename: The name of the file to be checked.
+    :return: True if the file extension is allowed, False otherwise.
+    """
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
 @app.route('/submit_review', methods=["POST"])
 def submit_review():
+    # Retrieve form data
+    book_title = request.form['title']
+    book_review = request.form['review']
+    book_rating = int(request.form['stars'])
+    book_image = request.form['comic_image'] if 'comic_image' in request.form else None
+
+    # Retrieve the user ID from session (ensure user is logged in)
+    user_id = session.get('user_id')
+
+    if user_id is None:
+        flash('You need to be logged in to submit a review.')
+        return redirect(url_for('login'))  # Redirect to login page if not logged in
+
+    # Handle file upload
+    if 'comic_image' not in request.files:
+        book_image = None
+    else:
+        file = request.files['comic_image']
+        if file and allowed_file(file.filename):
+            # Secure the filename and save it to the upload folder
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            book_image = filename  # Store the filename in the database
+        else:
+            # tell user that image is not valid.
+            flash('Image format not allowed. Please try a different one.')
+            return redirect(url_for('add_post'))
+
+    # Open database connection
+    db = get_db()
+
+    # Insert review into the posts table with the foreign key user_id
+    db.execute('INSERT INTO posts (user_id, title, review, stars, image_filename) '
+               'VALUES (?, ?, ?, ?, ?)', (user_id, book_title, book_review, book_rating, book_image))
+
+    db.commit()
+
+    # Provide feedback to the user
     flash('Your new review has been posted.')
     return redirect(url_for('feed'))
-
-# TODO:
-# - possibly: try to add the post to the database (create tables for each part of the post).

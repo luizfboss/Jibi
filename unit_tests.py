@@ -1,7 +1,8 @@
 import os
 import app
 import unittest
-import tempfile
+import tempfile # used in image-related tests to see if the image is in the data
+from io import BytesIO
 
 class FlaskrTestCase(unittest.TestCase):
     def setUp(self):
@@ -122,7 +123,6 @@ class FlaskrTestCase(unittest.TestCase):
         assert b'Upload Comic Book Cover' in rv.data  # Check for the image upload field
         assert b'Submit Review' in rv.data  # Check for submit button
 
-    # UNIT TESTS FOR LATER
     def test_add_post_and_submit_review(self):
         """Test the process of adding a post (comic book review) and submitting it successfully."""
 
@@ -141,23 +141,69 @@ class FlaskrTestCase(unittest.TestCase):
         assert b'Your new review has been posted.' in rv.data
         assert b'Add a Post' in rv.data  # Assuming the feed page contains the word 'Feed'
 
+    # test if image is in data when uploaded
+    def test_submit_review_with_image(self):
+        """Test submitting a review with an image upload."""
+        self.test_add_user_success()
+        self.app.post('/user_auth', data=dict(
+            username='johndoe',
+            password='password123'
+        ), follow_redirects=True)
+
+        rv = self.app.post('/submit_review', data=dict(
+            title='Batman',
+            review='Great comic!',
+            stars='5',
+            comic_image=(BytesIO(b"fake image data"), 'batman.png')
+        ), content_type='multipart/form-data', follow_redirects=True)
+
+        assert b'Your new review has been posted.' in rv.data
+        saved_file = os.path.join(app.app.config['UPLOAD_FOLDER'], 'batman.png')
+        assert os.path.exists(saved_file)
+
+    # test if image not in data when NOT uploaded
+    def test_submit_review_without_image(self):
+        """Test submitting a review without an image."""
+        self.test_add_user_success()
+        self.app.post('/user_auth', data=dict(
+            username='johndoe',
+            password='password123'
+        ), follow_redirects=True)
+
+        rv = self.app.post('/submit_review', data=dict(
+            title='Superman',
+            review='Amazing story!',
+            stars='4'
+        ), follow_redirects=True)
+
+        assert b'Your new review has been posted.' in rv.data
+
+    # test if invalid image trying to be uploaded is not being uploaded
+    def test_submit_review_invalid_image(self):
+        """Test submitting a review with an invalid image file format."""
+        self.test_add_user_success()
+        self.app.post('/user_auth', data=dict(
+            username='johndoe',
+            password='password123'
+        ), follow_redirects=True)
+
+        rv = self.app.post('/submit_review', data=dict(
+            title='Iron Man',
+            review='Great action!',
+            stars='5',
+            comic_image=(BytesIO(b"fake image data"), 'invalid_image.txt')
+        ), content_type='multipart/form-data', follow_redirects=True)
+
+        assert b'Image format not allowed. Please try a different one.' in rv.data
+        saved_file = os.path.join(app.app.config['UPLOAD_FOLDER'], 'invalid_image.txt')
+        assert not os.path.exists(saved_file)
+
     # def test_feed_page_displays_post(self):
     #     """Test that the feed page displays the added post."""
     #     self.test_add_post_success()  # Add a post
     #     rv = self.app.get('/feed', follow_redirects=True)
     #     assert b'Spider-Man' in rv.data  # Check if post title appears in feed
     #     assert b'Amazing comic!' in rv.data  # Check if review appears in feed
-    #
-    # def test_feed_page_displays_username(self):
-    #     """Test that the feed page displays the user's name after login."""
-    #     self.test_add_user_success()  # Register user first
-    #     self.app.post('/user_auth', data=dict(
-    #         username='johndoe',
-    #         password='password123'
-    #     ), follow_redirects=True)  # Log in user
-    #
-    #     rv = self.app.get('/feed', follow_redirects=True)
-    #     assert b'You look good today, John' in rv.data  # Assuming feed greets user by first name
 
 if __name__ == '__main__':
     unittest.main()
